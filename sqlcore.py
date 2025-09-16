@@ -20,7 +20,7 @@ meta.create_all(engine) #this actually creates the table as engine manages conne
 conn=engine.connect()
 select_statement = people.select().where(people.c.name == 'Mike')
 result = conn.execute(select_statement)
-conn.commit() #this makes sure that the change i applied to the db out the the program
+conn.commit() #this makes sure that the change is applied to the db out the the program
 
 
 print(result.fetchall()) #fetchall writes everything in one line instead of iterating, otherwise result = a list of all rows from the query results which is run by iteration

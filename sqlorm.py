@@ -3,15 +3,15 @@ from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 engine = create_engine('sqlite:///mydatabaseorm.db', echo=True)
 
-base=declarative_base()
+base=declarative_base() #base which we inherit from class
 
 class Person(base):
-    __tablename__='people'
+    __tablename__='people' #name of table in db
     id = Column(Integer, primary_key=True)
     name= Column(String, nullable=False)
     age= Column(Integer)
     
-    things = relationship('Thing', back_populates='person')
+    things = relationship('Thing', back_populates='person') #? what is backpopulates
     
 
 class Thing(base):
@@ -21,12 +21,12 @@ class Thing(base):
     value = Column(Float)
     owner = Column(Integer, ForeignKey('people.id'))
     
-    person=relationship('Person', back_populates='things')
+    person=relationship('Person', back_populates='things') 
     
     
 base.metadata.create_all(engine)
 
-Session= sessionmaker(bind=engine)
+Session= sessionmaker(bind=engine) #sessionmaker is a sessionfactory bound to the engine, then we create instance of that below
 session=Session()
 
 new_person= Person(name='Charlie', age=70)
@@ -59,9 +59,10 @@ print(result2)
 
 result3=session.query(Person).filter(Person.age>40).all()
 #print([p.name for p in result3])
+#.all is alternative to fetch all
 
 
-
-
+session.close()
+#closes conenction and also commit everthing not done so far 
 
  
