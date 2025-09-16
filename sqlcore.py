@@ -1,19 +1,21 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey, Float
 from random import randint, choice
+import os
 
 engine = create_engine('sqlite:///mydatabase.db', echo=True)
 
 meta = MetaData() #passed as a parameter into Table function and stores all the data of table to create table later on
 
 people= Table(
-    "people",
-    meta,
-    Column('id', Integer, primary_key=True),
+    "people", #name of table
+    meta, #metadata object, keeps track of all info
+    Column('id', Integer, primary_key=True), 
     Column('name', String, nullable=False),
     Column('age', Integer)
 )
 
-meta.create_all(engine) #this actually creates the table 
+meta.create_all(engine) #this actually creates the table as engine manages connections internally and we do not need to explicitly create connection objects to create tables either
+
 
 conn=engine.connect()
 select_statement = people.select().where(people.c.name == 'Mike')
@@ -21,7 +23,7 @@ result = conn.execute(select_statement)
 conn.commit() #this makes sure that the change i applied to the db out the the program
 
 
-print(result.fetchall()) #fetchall writes everything in one line instead of iterating 
+print(result.fetchall()) #fetchall writes everything in one line instead of iterating, otherwise result = a list of all rows from the query results which is run by iteration
 
 
 #Let's model relationships now
@@ -59,5 +61,34 @@ for _ in range(5):
     
 conn.commit()
 
+#inner join, preserves only the rows which have a relationship and doesn't show empty relationships in the rows
+join_statement = people.join(things, people.c.id == things.c.owner)
+select_statement = people.select().with_only_columns(people.c.name, things.c.description).select_from(join_statement)
 
-#baad ka code bacha hua tha 10 mins ka, it taught about sql joins and relationship estimations
+result = conn.execute(select_statement)
+#result has a cursor, retrieves result after using query and then exhausts itself after the cursor which acts as a pointer
+#result = iterator and not a list so it is exhauster after every iteration and we need to re run query, this is useful for memory efficiency
+print(result.fetchall())
+
+result = conn.execute(select_statement)
+for row in result.fetchall():
+    print(row)
+
+
+result = conn.execute(select_statement)
+for row in result:
+    print(row)
+    
+    
+#outer join
+join_statement = people.outerjoin(things, people.c.id == things.c.owner)
+select_statement = people.select().with_only_columns(people.c.name, things.c.description).select_from(join_statement)
+
+result = conn.execute(select_statement)
+for row in result:
+    print(row)
+   
+
+db_path = 'mydatabase.db'
+if os.path.exists(db_path):
+    os.remove(db_path)
